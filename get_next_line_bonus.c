@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mal-mora <mal-mora@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/30 16:00:22 by mal-mora          #+#    #+#             */
-/*   Updated: 2023/12/01 12:47:33 by mal-mora         ###   ########.fr       */
+/*   Updated: 2023/12/01 12:41:00 by mal-mora         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,7 @@ static char	*get_line(int fd, char *buf, char **container)
 	reader = 1;
 	if (!*container)
 		*container = ft_strdup("");
-	while (reader && !ft_strchr(*container, '\n'))
+	while (*container && reader && !ft_strchr(*container, '\n'))
 	{
 		reader = read(fd, buf, BUFFER_SIZE);
 		if (reader == -1)
@@ -108,26 +108,42 @@ static char	*get_line(int fd, char *buf, char **container)
 char	*get_next_line(int fd)
 {
 	char		*buf;
-	static char	*container;
+	static char	*container[OPEN_MAX];
 	char		*line;
 
-	if (fd < 0 || BUFFER_SIZE <= 0 || BUFFER_SIZE >= INT32_MAX)
-		return (ft_free(&container));
+	if (fd < 0 || BUFFER_SIZE <= 0 || BUFFER_SIZE >= INT32_MAX || fd > OPEN_MAX)
+		return (ft_free(&container[fd]));
 	buf = malloc((BUFFER_SIZE + 1) * sizeof(char));
 	if (!buf)
-		return (ft_free(&container));
-	line = get_line(fd, buf, &container);
+		return (ft_free(&container[fd]));
+	line = get_line(fd, buf, &container[fd]);
 	if (!line)
-		return ((free(container), container = NULL, free(buf), NULL));
-	container = save_data(container);
+		return ((free(container[fd]), container[fd] = NULL, free(buf), NULL));
+	container[fd] = save_data(container[fd]);
 	free(buf);
 	return (line);
 }
 // int main()
 // {
 //     int fd;
+//     int i = 3;
 //     fd = open("ex.txt",O_RDONLY);
+//     int fd2 = open("he.txt", O_CREAT | O_RDWR, 0666);
+//     if (fd2 == -1) {
+//     perror("Error opening or creating he.txt");
+//     return 1;
+//     }
+//     printf("%s",get_next_line(fd2));
 //     printf("%s",get_next_line(fd));
 //     printf("%s",get_next_line(fd));
+//     printf("%s",get_next_line(fd2));
 //     printf("%s",get_next_line(fd));
+//     printf("%s",get_next_line(fd2));
+//    /* while(i--)
+//     {
+//         str = get_next_line(fd);
+//         printf("%s",str);
+//         free(str);
+//     }*/
+//     // system("leaks a.out");
 // }
